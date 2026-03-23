@@ -37,9 +37,9 @@ jobs:
           SUPADATA_API_KEY: ${{ secrets.SUPADATA_API_KEY }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" != "all" ]; then
-            cd scripts && node generate-feed.js --${{ inputs.mode }}
+            cd scripts && node generate-feed.js --${{ inputs.mode }} 2>&1
           else
-            cd scripts && node generate-feed.js
+            cd scripts && node generate-feed.js 2>&1
           fi
 
       - name: Commit and push feeds

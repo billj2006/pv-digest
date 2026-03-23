@@ -22,7 +22,7 @@ const APIFY_BASE = 'https://api.apify.com/v2';
 const APIFY_ACTOR = 'apidojo~tweet-scraper';
 const SUPADATA_BASE = 'https://api.supadata.ai/v1';
 
-const TWEET_LOOKBACK_HOURS = 24;
+const TWEET_LOOKBACK_HOURS = 72;
 const PODCAST_LOOKBACK_HOURS = 72;
 const MAX_TWEETS_PER_USER = 3;
 const APIFY_POLL_INTERVAL_MS = 5000;
