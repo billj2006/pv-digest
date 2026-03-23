@@ -53,14 +53,26 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "=== remote ==="
+          git remote -v
+          echo "=== HEAD before fetch ==="
+          git log --oneline -2 HEAD
+          echo "=== origin/main before fetch ==="
+          git log --oneline -2 origin/main || echo "(not set)"
           cp feed-x.json /tmp/feed-x.json
           cp feed-podcasts.json /tmp/feed-podcasts.json
           cp state-feed.json /tmp/state-feed.json
           git fetch origin
+          echo "=== origin/main after fetch ==="
+          git log --oneline -2 origin/main
           git reset --hard origin/main
+          echo "=== HEAD after reset ==="
+          git log --oneline -2 HEAD
           cp /tmp/feed-x.json feed-x.json
           cp /tmp/feed-podcasts.json feed-podcasts.json
           cp /tmp/state-feed.json state-feed.json
           git add feed-x.json feed-podcasts.json state-feed.json
           git diff --cached --quiet || git commit -m "chore: update feeds [skip ci]"
+          echo "=== HEAD after commit ==="
+          git log --oneline -3 HEAD
           git push
