@@ -1,50 +1,54 @@
-name: Update Feeds and Push
+name: Update Feeds and Push Safely
 
+# 触发方式：手动触发 + 定时触发（可选，根据你的需求调整）
 on:
-  workflow_dispatch:  # 手动触发测试
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'  # 定时任务（可选）
+    - cron: '0 0 * * *'  # 每天 UTC 0 点执行，可删除或修改
 
 jobs:
-  update:
+  update-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 赋予写入代码库的权限（关键）
     steps:
-      # 步骤1：拉取仓库（必须加 fetch-depth: 0）
+      # 步骤1：拉取完整仓库（必须配置 fetch-depth: 0 和 ref）
       - name: Checkout full repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 拉取完整历史，缺一不可
-          ref: main       # 明确拉取main分支
+          fetch-depth: 0  # 拉取完整历史，解决浅克隆导致的 pull 失败
+          ref: main       # 明确指定拉取 main 分支
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 步骤2：（可选）你的业务操作（比如生成/修改feeds文件）
-      # 替换成你实际的修改文件命令，比如：
-      # - name: Generate feeds
+      # 步骤2：（可选）你的业务逻辑（替换成你实际修改文件的命令）
+      # 示例：如果是用脚本生成 feeds，取消下面注释并修改
+      # - name: Generate/Update feeds
       #   run: |
-      #     python update_feeds.py  # 你的真实修改逻辑
+      #     python your_feed_script.py
+      #     # 或其他修改文件的命令
 
-      # 步骤3：提交并推送（核心修复，顺序绝对不能乱）
+      # 步骤3：核心提交推送逻辑（修复所有同步问题）
       - name: Commit and push feeds
         run: |
-          # 1. 配置git用户（必须）
+          # 1. 基础 Git 配置
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 2. 先拉取远程最新代码（核心！必须在add/commit前）
-          git fetch origin main  # 先获取远程信息
-          git pull origin main --rebase --autostash  # 拉取+变基，自动暂存修改
+          # 2. 强制同步远程最新代码（先拉后重置，彻底解决同步问题）
+          # 先拉取远程所有分支的最新代码
+          git fetch origin main
+          # 重置本地 main 分支到远程最新版本（保留本地修改）
+          git reset --soft origin/main
           
-          # 3. 添加所有修改的文件
+          # 3. 添加并提交修改（仅当有变更时）
           git add .
-          
-          # 4. 提交（无变更则跳过）
           if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: update feeds [skip ci]"
+            echo "No changes to commit, exiting..."
+            exit 0
           fi
+          git commit -m "chore: update feeds [skip ci]"
           
-          # 5. 推送（最后一步）
-          git push origin main
+          # 4. 推送（使用安全强制推送，解决 fast-forward 问题）
+          git push origin main --force-with-lease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
