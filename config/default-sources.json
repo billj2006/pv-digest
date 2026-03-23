@@ -1,0 +1,17 @@
+{
+  "podcasts": [],
+  "x_accounts": [
+    { "name": "Drug Safety Guru", "handle": "drugsafetyguru" },
+    { "name": "PharmVigilance", "handle": "pharmvigilance" },
+    { "name": "ISoP Online", "handle": "ISoPonline" },
+    { "name": "Wellness Science", "handle": "WellnessScience" },
+    { "name": "Patient Safety Expert", "handle": "PtSafetyExpert" },
+    { "name": "Dr. Hudson Garrett", "handle": "Drhudsongarrett" },
+    { "name": "DSRU Drug Safety", "handle": "DSRUDrugSafety" },
+    { "name": "American Society of Pharmacovigilance", "handle": "AmSocietyPharm" },
+    { "name": "Drug Information Association", "handle": "DrugInfoAssn" },
+    { "name": "Peter Gøtzsche", "handle": "PGtzsche1" },
+    { "name": "Maryanne Demasi", "handle": "MaryanneDemasi" },
+    { "name": "Citeline", "handle": "Citeline" }
+  ]
+}
