@@ -1,62 +1,50 @@
-name: Generate PV Feeds
+name: Update Feeds and Push
 
 on:
+  workflow_dispatch:  # 手动触发测试
   schedule:
-    - cron: '0 6 * * *'   # Daily at 6am UTC (2pm Beijing)
-  workflow_dispatch:
-    inputs:
-      mode:
-        description: 'What to fetch'
-        required: false
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - tweets-only
-          - podcasts-only
-
-concurrency:
-  group: generate-feeds
-  cancel-in-progress: false
+    - cron: '0 0 * * *'  # 定时任务（可选）
 
 jobs:
-  generate:
+  update:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - uses: actions/checkout@v4
+      # 步骤1：拉取仓库（必须加 fetch-depth: 0）
+      - name: Checkout full repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: main
+          fetch-depth: 0  # 拉取完整历史，缺一不可
+          ref: main       # 明确拉取main分支
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      # 步骤2：（可选）你的业务操作（比如生成/修改feeds文件）
+      # 替换成你实际的修改文件命令，比如：
+      # - name: Generate feeds
+      #   run: |
+      #     python update_feeds.py  # 你的真实修改逻辑
 
-      - name: Install dependencies
-        run: cd scripts && npm install
-
-      - name: Generate feeds
-        env:
-          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
-          SUPADATA_API_KEY: ${{ secrets.SUPADATA_API_KEY }}
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" != "all" ]; then
-            cd scripts && node generate-feed.js --${{ inputs.mode }} 2>&1
-          else
-            cd scripts && node generate-feed.js 2>&1
-          fi
-
+      # 步骤3：提交并推送（核心修复，顺序绝对不能乱）
       - name: Commit and push feeds
+        run: |
+          # 1. 配置git用户（必须）
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 2. 先拉取远程最新代码（核心！必须在add/commit前）
+          git fetch origin main  # 先获取远程信息
+          git pull origin main --rebase --autostash  # 拉取+变基，自动暂存修改
+          
+          # 3. 添加所有修改的文件
+          git add .
+          
+          # 4. 提交（无变更则跳过）
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update feeds [skip ci]"
+          fi
+          
+          # 5. 推送（最后一步）
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add feed-x.json feed-podcasts.json state-feed.json
-          git diff --cached --quiet || git commit -m "chore: update feeds [skip ci]"
-          git pull --rebase --autostash origin main
-          git push origin main
