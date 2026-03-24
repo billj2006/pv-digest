@@ -1,9 +1,12 @@
 {
-  "generatedAt": "2026-03-23T10:52:35.269Z",
+  "generatedAt": "2026-03-24T06:51:39.592Z",
   "lookbackHours": 72,
   "x": [],
   "stats": {
     "xBuilders": 0,
     "totalTweets": 0
-  }
+  },
+  "errors": [
+    "Apify: Apify run failed to start: HTTP 400 — {\n  \"error\": {\n    \"type\": \"max-items-must-be-greater-than-zero\",\n    \"message\": \"Maximum charged results must be greater than zero\"\n  }\n}"
+  ]
 }
