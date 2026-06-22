@@ -1,9 +1,12 @@
 {
-  "generatedAt": "2026-06-21T09:33:03.473Z",
+  "generatedAt": "2026-06-22T11:30:30.870Z",
   "lookbackHours": 72,
   "x": [],
   "stats": {
     "xBuilders": 0,
     "totalTweets": 0
-  }
+  },
+  "errors": [
+    "Apify: Apify run failed to start: HTTP 403 — {\n  \"error\": {\n    \"type\": \"platform-feature-disabled\",\n    \"message\": \"Monthly usage hard limit exceeded\"\n  }\n}"
+  ]
 }
